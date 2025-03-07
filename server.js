@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const { initializeApp } = require('firebase/app');
-const { getFirestore, collection, addDoc, getDocs } = require('firebase/firestore');
+const { getFirestore, collection, getDocs, addDoc } = require('firebase/firestore');
 const path = require('path');
 
 // Initialize Express
@@ -26,7 +26,7 @@ const db = getFirestore(firebaseApp);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Test route
+// Test route to verify server is working
 app.get('/test', (req, res) => {
   res.json({ message: 'Server is working!' });
 });
@@ -34,6 +34,7 @@ app.get('/test', (req, res) => {
 // Get signup count
 app.get('/signup-count', async (req, res) => {
   try {
+    console.log('Fetching signup count...');
     const waitlistRef = collection(db, 'waitlist');
     const snapshot = await getDocs(waitlistRef);
     const count = snapshot.size;
@@ -68,6 +69,7 @@ app.post('/signup', async (req, res) => {
   }
 
   try {
+    console.log('Adding new signup:', email);
     await addDoc(collection(db, 'waitlist'), {
       email,
       signupDate: new Date()
@@ -76,6 +78,8 @@ app.post('/signup', async (req, res) => {
     const waitlistRef = collection(db, 'waitlist');
     const snapshot = await getDocs(waitlistRef);
     const count = snapshot.size;
+
+    console.log('Updated signup count:', count);
 
     res.json({
       success: true,
