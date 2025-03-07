@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnapFit - AI-Powered Fitness Revolution</title>
+    <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.159.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.159.0/examples/jsm/",
+                "gsap": "https://unpkg.com/gsap@3.12.2/index.js"
+            }
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body { 
+            color: white;
+            overflow-x: hidden;
+            background: #0a0a0a;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(45deg, #0a0a0a, #1a1a1a);
+        }
+
+        .content {
+            position: relative;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .glass-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .left-content h1 {
+            font-size: 3.5em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #aaa;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .value-prop {
+            margin: 40px 0;
+        }
+
+        .feature {
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+            padding: 15px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .feature:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .feature span {
+            font-size: 24px;
+            background: rgba(40, 167, 69, 0.2);
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .feature p {
+            font-size: 1.1em;
+            color: #ddd;
+        }
+
+        .signup-form {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .form-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #28a745;
+        }
+
+        input { 
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 1em;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #28a745;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        button { 
+            width: 100%;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        button:hover::after {
+            left: 100%;
+        }
+
+        #message {
+            margin-top: 15px;
+            height: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 40px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 768px) {
+            .glass-container {
+                grid-template-columns: 1fr;
+                padding: 30px;
+            }
+
+            .left-content h1 {
+                font-size: 2.5em;
+            }
+
+            .feature {
+                padding: 12px;
+            }
+
+            .feature span {
+                padding: 12px;
+            }
+        }
+
+        .stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #28a745;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .progress-container {
+            margin: 15px 0 25px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-updated {
+            animation: pulse 1s ease;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .progress-text {
+            text-align: right;
+            font-size: 0.9em;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Loading 3D Models...</div>
+    <div id="canvas-container"></div>
+    
+    <div class="content">
+        <div class="glass-container">
+            <div class="left-content">
+                <h1>SnapFit: Your AI Fitness Companion</h1>
+                <p class="subtitle">Experience the future of workout tracking with intelligent form analysis and personalized insights.</p>
+                
+                <div class="value-prop">
+                    <div class="feature">
+                        <span>📸</span>
+                        <p>Snap & Track: Automatically log your exercises and track your progress</p>
+                    </div>
+                    <div class="feature">
+                        <span>🔥</span>
+                        <p><strong>Never Break Your Streak:</strong> Smart reminders and streak tracking to keep you consistent</p>
+                    </div>
+                    <div class="feature">
+                        <span>📊</span>
+                        <p>Detailed analytics to help you optimize your training routine</p>
+                    </div>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number">100+</div>
+                        <div class="stat-label">Exercise Types</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">30+</div>
+                        <div class="stat-label">Day Streaks</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Support</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="signup-form">
+                <h2 class="form-title">Join the Fitness Revolution</h2>
+                <p style="color: #ddd; margin-bottom: 20px;"><strong>Your support is crucial!</strong> We need 500 signups to launch this app and make your fitness journey easier.</p>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                    <p class="progress-text">Loading...</p>
+                </div>
+                <input type="email" id="email" placeholder="Enter your email address">
+                <button onclick="submitEmail()">Join the Waitlist</button>
+                <p id="message"></p>
+                <p style="color: #aaa; font-size: 0.9em; margin-top: 15px; text-align: center;">Be among the first to experience SnapFit and get <strong>1 month free premium</strong> when we launch!</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { gsap } from 'gsap';
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+
+        const pointLight1 = new THREE.PointLight(0x28a745, 1, 100);
+        pointLight1.position.set(5, 5, 5);
+        scene.add(pointLight1);
+
+        const pointLight2 = new THREE.PointLight(0x2864a7, 1, 100);
+        pointLight2.position.set(-5, -5, -5);
+        scene.add(pointLight2);
+
+        // Move camera back to see more objects
+        camera.position.z = 15;
+
+        // Create gym equipment
+        const equipment = [];
+
+        function createDumbbell(size = 1) {
+            const group = new THREE.Group();
+            
+            // Handle
+            const handle = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.1 * size, 0.1 * size, 2 * size),
+                new THREE.MeshPhongMaterial({ 
+                    color: 0x333333,
+                    metalness: 0.8,
+                    roughness: 0.2
+                })
+            );
+            
+            // Weights
+            const weight1 = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.4 * size, 0.4 * size, 0.4 * size),
+                new THREE.MeshPhongMaterial({ 
+                    color: 0x28a745,
+                    metalness: 0.8,
+                    roughness: 0.2
+                })
+            );
+            weight1.position.y = 1 * size;
+            
+            const weight2 = weight1.clone();
+            weight2.position.y = -1 * size;
+            
+            group.add(handle);
+            group.add(weight1);
+            group.add(weight2);
+            
+            return group;
+        }
+
+        function createPlate(size = 1) {
+            const group = new THREE.Group();
+            
+            // Main plate
+            const plate = new THREE.Mesh(
+                new THREE.CylinderGeometry(1 * size, 1 * size, 0.2 * size),
+                new THREE.MeshPhongMaterial({ 
+                    color: 0x28a745,
+                    metalness: 0.8,
+                    roughness: 0.2
+                })
+            );
+            
+            // Center hole
+            const hole = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.1 * size, 0.1 * size, 0.3 * size),
+                new THREE.MeshPhongMaterial({ 
+                    color: 0x333333,
+                    metalness: 0.8,
+                    roughness: 0.2
+                })
+            );
+            
+            group.add(plate);
+            group.add(hole);
+            
+            return group;
+        }
+
+        // Function to get a random position that covers the entire screen
+        function getRandomScreenPosition() {
+            // Calculate visible area at z=0
+            const vFOV = THREE.MathUtils.degToRad(camera.fov);
+            const height = 2 * Math.tan(vFOV / 2) * camera.position.z;
+            const width = height * camera.aspect;
+            
+            // Add extra space to ensure objects appear from off-screen
+            const extraSpace = 5;
+            
+            return {
+                x: (Math.random() - 0.5) * (width + extraSpace),
+                y: (Math.random() - 0.5) * (height + extraSpace),
+                z: (Math.random() - 0.5) * 20 - 5 // Depth variation
+            };
+        }
+
+        // Create and position equipment - more objects spread across the screen
+        for (let i = 0; i < 12; i++) { // Increased from 5 to 12
+            const size = 0.5 + Math.random() * 0.5;
+            const dumbbell = createDumbbell(size);
+            const position = getRandomScreenPosition();
+            dumbbell.position.set(position.x, position.y, position.z);
+            scene.add(dumbbell);
+            equipment.push(dumbbell);
+
+            // Random rotation
+            dumbbell.rotation.set(
+                Math.random() * Math.PI,
+                Math.random() * Math.PI,
+                Math.random() * Math.PI
+            );
+
+            // Animation - more varied
+            gsap.to(dumbbell.rotation, {
+                x: Math.PI * 2,
+                y: Math.PI * 2,
+                duration: 5 + Math.random() * 10,
+                repeat: -1,
+                ease: "none"
+            });
+
+            // Floating animation with larger range
+            gsap.to(dumbbell.position, {
+                y: dumbbell.position.y + (1 + Math.random() * 2),
+                duration: 2 + Math.random() * 3,
+                yoyo: true,
+                repeat: -1,
+                ease: "power1.inOut"
+            });
+        }
+
+        for (let i = 0; i < 8; i++) { // Increased from 3 to 8
+            const size = 0.3 + Math.random() * 0.3;
+            const plate = createPlate(size);
+            const position = getRandomScreenPosition();
+            plate.position.set(position.x, position.y, position.z);
+            scene.add(plate);
+            equipment.push(plate);
+
+            // Random rotation
+            plate.rotation.set(
+                Math.random() * Math.PI,
+                Math.random() * Math.PI,
+                Math.random() * Math.PI
+            );
+
+            // Animation - more varied
+            gsap.to(plate.rotation, {
+                x: Math.PI * 2,
+                y: Math.PI * 2,
+                duration: 5 + Math.random() * 10,
+                repeat: -1,
+                ease: "none"
+            });
+
+            // Floating animation with larger range
+            gsap.to(plate.position, {
+                y: plate.position.y + (1 + Math.random() * 2),
+                duration: 2 + Math.random() * 3,
+                yoyo: true,
+                repeat: -1,
+                ease: "power1.inOut"
+            });
+        }
+
+        // Add some objects that move across the screen
+        for (let i = 0; i < 5; i++) {
+            const isPlate = Math.random() > 0.5;
+            const size = 0.3 + Math.random() * 0.3;
+            const object = isPlate ? createPlate(size) : createDumbbell(size);
+            
+            // Start from off-screen
+            const startX = -30 - Math.random() * 10;
+            const endX = 30 + Math.random() * 10;
+            const y = (Math.random() - 0.5) * 15;
+            const z = (Math.random() - 0.5) * 10;
+            
+            object.position.set(startX, y, z);
+            scene.add(object);
+            equipment.push(object);
+            
+            // Random rotation
+            object.rotation.set(
+                Math.random() * Math.PI,
+                Math.random() * Math.PI,
+                Math.random() * Math.PI
+            );
+            
+            // Rotation animation
+            gsap.to(object.rotation, {
+                x: Math.PI * 2,
+                y: Math.PI * 2,
+                duration: 5 + Math.random() * 5,
+                repeat: -1,
+                ease: "none"
+            });
+            
+            // Movement animation
+            gsap.to(object.position, {
+                x: endX,
+                duration: 15 + Math.random() * 20,
+                repeat: -1,
+                ease: "none",
+                onRepeat: () => {
+                    object.position.x = startX;
+                }
+            });
+        }
+
+        // Mouse interaction
+        const mouse = new THREE.Vector2();
+        const raycaster = new THREE.Raycaster();
+
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children, true);
+
+            // Reset all objects
+            equipment.forEach(item => {
+                gsap.to(item.scale, {
+                    x: item.userData.originalScale || 1,
+                    y: item.userData.originalScale || 1,
+                    z: item.userData.originalScale || 1,
+                    duration: 0.5
+                });
+            });
+
+            // Scale up hovered object
+            if (intersects.length > 0) {
+                const object = intersects[0].object.parent;
+                gsap.to(object.scale, {
+                    x: 1.3,
+                    y: 1.3,
+                    z: 1.3,
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
+            }
+        }
+
+        window.addEventListener('mousemove', onMouseMove);
+
+        // Gentle camera movement
+        gsap.to(camera.position, {
+            x: 2,
+            y: 1,
+            duration: 20,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut"
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Remove loading message since we're not loading external models
+        document.getElementById('loading').style.display = 'none';
+    </script>
+
+    <script>
+        // Update signup counter with better error handling
+        function updateSignupCounter() {
+            console.log('Fetching signup count...');
+            fetch('/signup-count')
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`Server responded with status: ${res.status}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    console.log('Received count data:', data);
+                    if (data.success) {
+                        const percentage = data.percentage || 0;
+                        const count = data.count || 0;
+                        const target = data.target || 500;
+                        
+                        document.querySelector('.progress-fill').style.width = percentage + '%';
+                        document.querySelector('.progress-text').innerText = `${count}/${target} signups`;
+                    } else {
+                        console.error('Error in response:', data.message);
+                        document.querySelector('.progress-text').innerText = 'Error loading count';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching signup count:', error);
+                    document.querySelector('.progress-text').innerText = 'Error loading count';
+                });
+        }
+
+        // Update counter on page load
+        document.addEventListener('DOMContentLoaded', updateSignupCounter);
+
+        function submitEmail() {
+            const email = document.getElementById('email').value;
+            const messageEl = document.getElementById('message');
+            const button = document.querySelector('button');
+            
+            if (!email || !email.includes('@')) {
+                messageEl.style.color = '#dc3545';
+                messageEl.innerText = 'Please enter a valid email';
+                return;
+            }
+
+            messageEl.style.color = '#28a745';
+            messageEl.innerText = 'Sending...';
+            button.disabled = true;
+            button.style.opacity = '0.7';
+            
+            console.log('Submitting email:', email);
+            
+            fetch('/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`Server responded with status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log('Signup response:', data);
+                messageEl.innerText = data.message;
+                if (data.success) {
+                    document.getElementById('email').value = '';
+                    
+                    // Update counter with new data
+                    const percentage = data.percentage || 0;
+                    const count = data.count || 0;
+                    const target = data.target || 500;
+                    
+                    document.querySelector('.progress-fill').style.width = percentage + '%';
+                    document.querySelector('.progress-text').innerText = `${count}/${target} signups`;
+                    
+                    // Add animation to progress bar
+                    const progressFill = document.querySelector('.progress-fill');
+                    progressFill.classList.add('progress-updated');
+                    setTimeout(() => {
+                        progressFill.classList.remove('progress-updated');
+                    }, 1000);
+                }
+            })
+            .catch(error => {
+                console.error('Error during signup:', error);
+                messageEl.style.color = '#dc3545';
+                messageEl.innerText = 'Something went wrong. Please try again.';
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.style.opacity = '1';
+            });
+        }
+    </script>
+</body>
+</html>
