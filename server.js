@@ -34,7 +34,6 @@ app.get('/test', (req, res) => {
 // Get signup count
 app.get('/signup-count', async (req, res) => {
   try {
-    console.log('Fetching signup count...');
     const waitlistRef = collection(db, 'waitlist');
     const snapshot = await getDocs(waitlistRef);
     const count = snapshot.size;
@@ -62,7 +61,6 @@ app.post('/signup', async (req, res) => {
   const { email } = req.body;
   
   if (!email || !email.includes('@')) {
-    console.log('Invalid email:', email);
     return res.status(400).json({
       success: false,
       message: 'Please provide a valid email address'
@@ -70,7 +68,6 @@ app.post('/signup', async (req, res) => {
   }
 
   try {
-    console.log('Adding new signup:', email);
     await addDoc(collection(db, 'waitlist'), {
       email,
       signupDate: new Date()
@@ -79,8 +76,6 @@ app.post('/signup', async (req, res) => {
     const waitlistRef = collection(db, 'waitlist');
     const snapshot = await getDocs(waitlistRef);
     const count = snapshot.size;
-
-    console.log('Updated signup count:', count);
 
     res.json({
       success: true,
